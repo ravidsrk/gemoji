@@ -9,6 +9,7 @@ module Emoji
   extend self
 
   class DuplicateAliasError < StandardError; end
+  class DataError < StandardError; end
 
   @registry_mutex = Mutex.new
 
@@ -127,8 +128,12 @@ module Emoji
     end
 
     def parse_data_file
-      data = File.open(data_file, 'r:UTF-8') do |file|
-        JSON.parse(file.read, symbolize_names: true)
+      data = begin
+        File.open(data_file, 'r:UTF-8') do |file|
+          JSON.parse(file.read, symbolize_names: true)
+        end
+      rescue JSON::ParserError => e
+        raise DataError, "Failed to parse #{data_file}: #{e.message}"
       end
 
       if "".respond_to?(:-@)
