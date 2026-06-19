@@ -187,6 +187,18 @@ class EmojiTest < TestCase
     ], people_holding_hands.raw_skin_tone_variants.map { |u| Emoji::Character.hex_inspect(u) }
   end
 
+  test "find_by_unicode resolves all raw_skin_tone_variants for wave and people_holding_hands" do
+    wave = Emoji.find_by_alias("wave")
+    people_holding_hands = Emoji.find_by_alias("people_holding_hands")
+
+    [wave, people_holding_hands].each do |emoji|
+      emoji.raw_skin_tone_variants.each do |variant|
+        assert_equal emoji, Emoji.find_by_unicode(variant),
+          "expected #{emoji.name} for #{Emoji::Character.hex_inspect(variant)}"
+      end
+    end
+  end
+
   test "no custom emojis" do
     custom = Emoji.all.select(&:custom?)
     assert_equal 0, custom.size
