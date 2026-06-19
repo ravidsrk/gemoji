@@ -99,14 +99,19 @@ module Emoji
       self.class.hex_inspect(raw)
     end
 
-    attr_writer :image_filename
-
     def image_filename
       if defined? @image_filename
         @image_filename
       else
         default_image_filename
       end
+    end
+
+    def image_filename=(filename)
+      if filename.include?('..') || filename.include?('://')
+        raise ArgumentError, "invalid image_filename: #{filename.inspect}"
+      end
+      @image_filename = filename
     end
 
     private
