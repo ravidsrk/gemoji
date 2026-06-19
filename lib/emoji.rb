@@ -17,10 +17,13 @@ module Emoji
   end
 
   def all
-    return @all if defined? @all
-    @all = []
-    parse_data_file
-    @all
+    ensure_loaded
+    @all.dup.freeze
+  end
+
+  def preload!
+    ensure_loaded
+    self
   end
 
   # Public: Initialize an Emoji::Character instance and yield it to the block.
@@ -184,6 +187,3 @@ module Emoji
       @unicodes_index
     end
 end
-
-# Preload emoji into memory
-Emoji.all
