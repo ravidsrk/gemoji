@@ -1,6 +1,6 @@
 # arch-build-progress (adversarial-review-and-fix)
 
-PHASE: VERIFY
+PHASE: DONE
 
 ## Runtime goal
 
@@ -72,7 +72,7 @@ LAST_UPDATE: T-FINAL readiness written; validating fleet-outcome
 | FIX-OPS-005 | true | false | true | true | true | 2 |
 | FIX-VER-001 | true | false | true | true | true | 2 |
 | FIX-VER-002 | true | false | true | true | true | 1 |
-| T-FINAL | true | false | false | false | false | — |
+| T-FINAL | true | false | true | true | true | 3 |
 
 ## OPS / VERIFY-AT-SCALE
 

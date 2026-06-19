@@ -4,7 +4,7 @@ fleet-outcome:
   status: done
   repo: /private/tmp/gemoji
   base_branch: fleet/gemoji-ship-with-proof-base
-  prs_merged: 2
+  prs_merged: 3
   metrics:
     p0_open: 0
     p1_open: 0
