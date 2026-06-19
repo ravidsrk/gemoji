@@ -13,7 +13,7 @@ ship-with-proof: audit → test-coverage → doc-sync on github/gemoji
 
 ## Last fleet-outcome
 
-mission: doc-sync | status: done | drift_open: 0
+mission: doc-sync | status: done | drift_open: 0 | prs_merged: 3 | code_bug_findings: 1
 
 ## Node status
 
