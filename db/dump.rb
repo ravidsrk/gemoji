@@ -4,6 +4,7 @@ require "i18n"
 require 'emoji'
 require 'json'
 require_relative './emoji-test-parser'
+require_relative './unicode_versions'
 
 I18n.config.available_locales = :en
 items = []
@@ -38,8 +39,8 @@ for category in categories
         output_item.update(
           aliases: [I18n.transliterate(description).gsub(/\W+/, '_').downcase],
           tags: [],
-          unicode_version: "15.0",
-          ios_version: "16.4",
+          unicode_version: UNICODE_VERSION,
+          ios_version: IOS_VERSION_DEFAULT,
         )
       end
       output_item[:skin_tones] = true if emoji_item[:skin_tones]
@@ -67,3 +68,4 @@ trap(:PIPE) { abort }
 puts JSON.pretty_generate(items)
   .gsub("\n\n", "\n")
   .gsub(/,\n( +)/) { "\n%s, " % $1[2..-1] }
+  .gsub(/"tags": \[\]/) { %("tags": [\n    ]) }
