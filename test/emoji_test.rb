@@ -211,7 +211,7 @@ class EmojiTest < TestCase
       assert_equal %w[music], emoji.aliases
       assert_equal %w[notes eighth], emoji.tags
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
@@ -223,7 +223,7 @@ class EmojiTest < TestCase
     begin
       assert_equal "some_path/my_emoji.gif", emoji.image_filename
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
@@ -236,7 +236,7 @@ class EmojiTest < TestCase
       assert_equal [], emoji.tags
       assert_equal "music.png", emoji.image_filename
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
