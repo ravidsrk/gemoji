@@ -189,7 +189,7 @@ class EmojiTest < TestCase
 
   test "no custom emojis" do
     custom = Emoji.all.select(&:custom?)
-    assert 0, custom.size
+    assert_equal 0, custom.size
   end
 
   test "create" do
@@ -261,6 +261,19 @@ class EmojiTest < TestCase
       emoji.aliases.pop
       emoji.unicode_aliases.pop
       emoji.tags.pop
+      Emoji.edit_emoji(emoji) {}
     end
+  end
+
+  test "edit removes stale alias index entries" do
+    emoji = Emoji.find_by_alias("weary")
+    temp_alias = "weary_temp_dogfood"
+
+    Emoji.edit_emoji(emoji) { |char| char.add_alias temp_alias }
+    assert_equal emoji, Emoji.find_by_alias(temp_alias)
+
+    Emoji.edit_emoji(emoji) { |char| char.aliases.delete(temp_alias) }
+    assert_nil Emoji.find_by_alias(temp_alias)
+    assert_equal emoji, Emoji.find_by_alias("weary")
   end
 end

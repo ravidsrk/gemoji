@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "skills": {
+    "adversarial-review-and-fix": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "f68d0c4f9f726547e3d8bc999b9e7a6888d5163ddf4289bf9c066c2667e4b9f4"
+    },
+    "autonomous-fleet": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "ec22ee118e2355a064b080f63b3ba6bcdb67335c48021d134e06722f5425d8f0"
+    },
+    "autonomous-fleet-adapter-grok": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "5b72c23824b106492200d812be3eb9c20513bf4b9635baae5ece4fe1078e5c80"
+    },
+    "autonomous-fleet-core": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "0cce884f6e7f47f2e55838444a3fe3206c5bbe9a6947dfdc011d2121a69addd1"
+    },
+    "doc-sync": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "9b3c08d4ee7fbc0f71ce05d96a9ca6c0a142f81a5cc1035838b084b87e05cbb3"
+    },
+    "fleet-program": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "dd02a4f4befee436dbd1812446cba562e54555d0cde06eb9942ccf415436c287"
+    },
+    "setup-autonomous-fleet": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "6a9b5ff5cebd6bcd58b78ab0bacb50d750d4b5f428d678139988d427250b6f8b"
+    },
+    "test-coverage": {
+      "source": "/Users/ravindra/projects/autonomous-fleet",
+      "sourceType": "local",
+      "computedHash": "cdf14dbf721d46ef0c543b684a8cf1e650fb42987b81be8bf348ce9da3ea11b6"
+    }
+  }
+}

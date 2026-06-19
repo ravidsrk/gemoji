@@ -13,6 +13,15 @@ Add `gemoji` to your Gemfile.
 gem 'gemoji'
 ```
 
+Development
+-----------
+
+Run the test suite (stdlib Minitest; no Rake required on modern Ruby):
+
+```bash
+ruby -Ilib:test test/emoji_test.rb
+ruby -Ilib:test test/documentation_test.rb
+```
 
 Example Rails Helper
 --------------------

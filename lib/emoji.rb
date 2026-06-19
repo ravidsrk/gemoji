@@ -32,6 +32,9 @@ module Emoji
     @names_index ||= Hash.new
     @unicodes_index ||= Hash.new
 
+    @names_index.delete_if { |_, value| value == emoji }
+    @unicodes_index.delete_if { |_, value| value == emoji }
+
     yield emoji
 
     emoji.aliases.each do |name|
