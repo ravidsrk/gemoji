@@ -96,7 +96,7 @@ class EmojiTest < TestCase
   test "missing or incorrect unicodes" do
     emoji_map, _ = EmojiTestParser.parse(File.expand_path("../../vendor/unicode-emoji-test.txt", __FILE__))
     source_unicode_emoji = emoji_map.values
-    text_glyphs = Emoji.const_get(:TEXT_GLYPHS)
+    text_glyphs = Emoji::TEXT_GLYPHS
 
     missing = 0
     message = "Missing or incorrect unicodes:\n"

@@ -1,15 +1,9 @@
 # frozen_string_literal: true
 
+require_relative '../lib/emoji/unicode'
+
 module EmojiTestParser
-  VARIATION_SELECTOR_16 = "\u{fe0f}"
-  SKIN_TONES = [
-    "\u{1F3FB}", # light skin tone
-    "\u{1F3FC}", # medium-light skin tone
-    "\u{1F3FD}", # medium skin tone
-    "\u{1F3FE}", # medium-dark skin tone
-    "\u{1F3FF}", # dark skin tone
-  ]
-  SKIN_TONES_RE = /(#{SKIN_TONES.join("|")})/o
+  SKIN_TONES_RE = /(#{Emoji::SKIN_TONES.join("|")})/o
   SKIP_TYPES = ["unqualified", "component"]
 
   module_function
@@ -52,10 +46,10 @@ module EmojiTestParser
           next if SKIP_TYPES.include?(qualification.strip)
           emoji_raw = codepoints.strip.split.map { |c| c.hex }.pack("U*")
           emoji_normalized = emoji_raw
-            .gsub(VARIATION_SELECTOR_16, "")
+            .gsub(Emoji::VARIATION_SELECTOR_16, "")
             .gsub(SKIN_TONES_RE, "")
           emoji_item = emoji_map[emoji_normalized]
-          if SKIN_TONES.any? { |s| emoji_raw.include?(s) }
+          if Emoji::SKIN_TONES.any? { |s| emoji_raw.include?(s) }
             emoji_item[:skin_tones] = true if emoji_item
             next
           end

@@ -105,20 +105,6 @@ module Emoji
 
     private
 
-    VARIATION_SELECTOR_16 = "\u{fe0f}".freeze
-    ZERO_WIDTH_JOINER = "\u{200d}".freeze
-    PEOPLE_HOLDING_HANDS = "\u{1f9d1}\u{200d}\u{1f91d}\u{200d}\u{1f9d1}".freeze
-
-    SKIN_TONES = [
-      "\u{1F3FB}", # light skin tone
-      "\u{1F3FC}", # medium-light skin tone
-      "\u{1F3FD}", # medium skin tone
-      "\u{1F3FE}", # medium-dark skin tone
-      "\u{1F3FF}", # dark skin tone
-    ]
-
-    private_constant :VARIATION_SELECTOR_16, :ZERO_WIDTH_JOINER, :PEOPLE_HOLDING_HANDS, :SKIN_TONES
-
     def default_image_filename
       if custom?
         '%s.png' % name

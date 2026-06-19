@@ -1,6 +1,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
+require 'emoji/unicode'
 require 'emoji/character'
 require 'json'
 
@@ -58,24 +59,6 @@ module Emoji
   end
 
   private
-    VARIATION_SELECTOR_16 = "\u{fe0f}".freeze
-    SKIN_TONE_RE = /[\u{1F3FB}-\u{1F3FF}]/
-
-    # Characters which must have VARIATION_SELECTOR_16 to render as color emoji:
-    TEXT_GLYPHS = [
-      "\u{1f237}", # Japanese “monthly amount” button
-      "\u{1f202}", # Japanese “service charge” button
-      "\u{1f170}", # A button (blood type)
-      "\u{1f171}", # B button (blood type)
-      "\u{1f17e}", # O button (blood type)
-      "\u{00a9}",  # copyright
-      "\u{00ae}",  # registered
-      "\u{2122}",  # trade mark
-      "\u{3030}",  # wavy dash
-    ].freeze
-
-    private_constant :VARIATION_SELECTOR_16, :TEXT_GLYPHS, :SKIN_TONE_RE
-
     def parse_data_file
       data = File.open(data_file, 'r:UTF-8') do |file|
         JSON.parse(file.read, symbolize_names: true)
