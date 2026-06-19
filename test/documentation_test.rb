@@ -3,7 +3,11 @@ require 'test_helper'
 # Pull the EmojiHelper example from the docs
 readme = File.expand_path('../../README.md', __FILE__)
 docs = File.open(readme, 'r:UTF-8') { |f| f.read }
-eval docs.match(/^module.+?^end/m)[0]
+match = docs.match(/^module EmojiHelper\n(.+?)^end/m)
+raise "README EmojiHelper example not found" unless match
+
+EmojiHelper = Module.new
+EmojiHelper.module_eval(match[1], readme, 1)
 
 String.class_eval do
   def html_safe() self end

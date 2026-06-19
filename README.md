@@ -33,13 +33,21 @@ See the [Emoji cheat sheet](http://www.emoji-cheat-sheet.com) for more examples.
 ```ruby
 module EmojiHelper
   def emojify(content)
+    return unless content.present?
+
     h(content).to_str.gsub(/:([\w+-]+):/) do |match|
       if emoji = Emoji.find_by_alias($1)
-        %(<img alt="#$1" src="#{image_path("emoji/#{emoji.image_filename}")}" style="vertical-align:middle" width="20" height="20" />)
+        emoji_image_tag(emoji, alt: $1)
       else
         match
       end
-    end.html_safe if content.present?
+    end
+  end
+
+  private
+
+  def emoji_image_tag(emoji, alt:)
+    %(<img alt="#{h(alt)}" src="#{image_path("emoji/#{emoji.image_filename}")}" style="vertical-align:middle" width="20" height="20" />).html_safe
   end
 end
 ```
