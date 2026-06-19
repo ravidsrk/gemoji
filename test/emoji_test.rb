@@ -96,7 +96,7 @@ class EmojiTest < TestCase
   test "missing or incorrect unicodes" do
     emoji_map, _ = EmojiTestParser.parse(File.expand_path("../../vendor/unicode-emoji-test.txt", __FILE__))
     source_unicode_emoji = emoji_map.values
-    text_glyphs = Emoji.const_get(:TEXT_GLYPHS)
+    text_glyphs = Emoji::TEXT_GLYPHS
 
     missing = 0
     message = "Missing or incorrect unicodes:\n"
@@ -187,6 +187,18 @@ class EmojiTest < TestCase
     ], people_holding_hands.raw_skin_tone_variants.map { |u| Emoji::Character.hex_inspect(u) }
   end
 
+  test "find_by_unicode resolves all raw_skin_tone_variants for wave and people_holding_hands" do
+    wave = Emoji.find_by_alias("wave")
+    people_holding_hands = Emoji.find_by_alias("people_holding_hands")
+
+    [wave, people_holding_hands].each do |emoji|
+      emoji.raw_skin_tone_variants.each do |variant|
+        assert_equal emoji, Emoji.find_by_unicode(variant),
+          "expected #{emoji.name} for #{Emoji::Character.hex_inspect(variant)}"
+      end
+    end
+  end
+
   test "no custom emojis" do
     custom = Emoji.all.select(&:custom?)
     assert_equal 0, custom.size
@@ -211,7 +223,7 @@ class EmojiTest < TestCase
       assert_equal %w[music], emoji.aliases
       assert_equal %w[notes eighth], emoji.tags
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
@@ -223,7 +235,7 @@ class EmojiTest < TestCase
     begin
       assert_equal "some_path/my_emoji.gif", emoji.image_filename
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
@@ -236,12 +248,15 @@ class EmojiTest < TestCase
       assert_equal [], emoji.tags
       assert_equal "music.png", emoji.image_filename
     ensure
-      Emoji.all.pop
+      Emoji.remove_emoji(emoji)
     end
   end
 
   test "edit" do
     emoji = Emoji.find_by_alias("weary")
+    original_aliases = emoji.instance_variable_get(:@aliases).dup
+    original_unicode_aliases = emoji.instance_variable_get(:@unicode_aliases).dup
+    original_tags = emoji.instance_variable_get(:@tags).dup
 
     emoji = Emoji.edit_emoji(emoji) do |char|
       char.add_alias "whining"
@@ -258,10 +273,11 @@ class EmojiTest < TestCase
       assert_equal %w[weary whining], emoji.aliases
       assert_includes emoji.tags, "complaining"
     ensure
-      emoji.aliases.pop
-      emoji.unicode_aliases.pop
-      emoji.tags.pop
-      Emoji.edit_emoji(emoji) {}
+      Emoji.edit_emoji(emoji) do |char|
+        char.instance_variable_set(:@aliases, original_aliases)
+        char.instance_variable_set(:@unicode_aliases, original_unicode_aliases)
+        char.instance_variable_set(:@tags, original_tags)
+      end
     end
   end
 
@@ -272,7 +288,9 @@ class EmojiTest < TestCase
     Emoji.edit_emoji(emoji) { |char| char.add_alias temp_alias }
     assert_equal emoji, Emoji.find_by_alias(temp_alias)
 
-    Emoji.edit_emoji(emoji) { |char| char.aliases.delete(temp_alias) }
+    Emoji.edit_emoji(emoji) do |char|
+      char.instance_variable_get(:@aliases).delete(temp_alias)
+    end
     assert_nil Emoji.find_by_alias(temp_alias)
     assert_equal emoji, Emoji.find_by_alias("weary")
   end

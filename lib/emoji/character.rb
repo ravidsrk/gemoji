@@ -16,9 +16,6 @@ module Emoji
 
     attr_writer :skin_tones
 
-    # A list of names uniquely referring to this emoji.
-    attr_reader :aliases
-
     # The category for this emoji as per Apple's character palette
     attr_accessor :category
 
@@ -31,17 +28,24 @@ module Emoji
     # The iOS version where this emoji first debuted
     attr_accessor :ios_version
 
-    def name() aliases.first end
+    def name() @aliases.first end
+
+    # A list of names uniquely referring to this emoji.
+    def aliases
+      @aliases.dup.freeze
+    end
 
     def add_alias(name)
-      aliases << name
+      @aliases << name
     end
 
     # A list of Unicode strings that uniquely refer to this emoji.
-    attr_reader :unicode_aliases
+    def unicode_aliases
+      @unicode_aliases.dup.freeze
+    end
 
     # Raw Unicode string for an emoji. Nil if emoji is non-standard.
-    def raw() unicode_aliases.first end
+    def raw() @unicode_aliases.first end
 
     # Raw Unicode strings for each skin tone variant of this emoji. The result is an empty array
     # unless the emoji supports skin tones.
@@ -66,15 +70,17 @@ module Emoji
     end
 
     def add_unicode_alias(str)
-      unicode_aliases << str
+      @unicode_aliases << str
     end
 
     # A list of tags associated with an emoji. Multiple emojis can share the
     # same tags.
-    attr_reader :tags
+    def tags
+      @tags.dup.freeze
+    end
 
     def add_tag(tag)
-      tags << tag
+      @tags << tag
     end
 
     def initialize(name)
@@ -93,8 +99,6 @@ module Emoji
       self.class.hex_inspect(raw)
     end
 
-    attr_writer :image_filename
-
     def image_filename
       if defined? @image_filename
         @image_filename
@@ -103,21 +107,14 @@ module Emoji
       end
     end
 
+    def image_filename=(filename)
+      if filename.include?('..') || filename.include?('://')
+        raise ArgumentError, "invalid image_filename: #{filename.inspect}"
+      end
+      @image_filename = filename
+    end
+
     private
-
-    VARIATION_SELECTOR_16 = "\u{fe0f}".freeze
-    ZERO_WIDTH_JOINER = "\u{200d}".freeze
-    PEOPLE_HOLDING_HANDS = "\u{1f9d1}\u{200d}\u{1f91d}\u{200d}\u{1f9d1}".freeze
-
-    SKIN_TONES = [
-      "\u{1F3FB}", # light skin tone
-      "\u{1F3FC}", # medium-light skin tone
-      "\u{1F3FD}", # medium skin tone
-      "\u{1F3FE}", # medium-dark skin tone
-      "\u{1F3FF}", # dark skin tone
-    ]
-
-    private_constant :VARIATION_SELECTOR_16, :ZERO_WIDTH_JOINER, :PEOPLE_HOLDING_HANDS, :SKIN_TONES
 
     def default_image_filename
       if custom?

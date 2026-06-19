@@ -1,50 +1,56 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
+require 'emoji/unicode'
 require 'emoji/character'
 require 'json'
 
 module Emoji
   extend self
 
+  class DuplicateAliasError < StandardError; end
+  class DataError < StandardError; end
+
+  @registry_mutex = Mutex.new
+
   def data_file
     File.expand_path('../../db/emoji.json', __FILE__)
   end
 
   def all
-    return @all if defined? @all
-    @all = []
-    parse_data_file
-    @all
+    ensure_loaded
+    @all.dup.freeze
+  end
+
+  def preload!
+    ensure_loaded
+    self
   end
 
   # Public: Initialize an Emoji::Character instance and yield it to the block.
   # The character is added to the `Emoji.all` set.
   def create(name)
     emoji = Emoji::Character.new(name)
-    self.all << edit_emoji(emoji) { yield emoji if block_given? }
+    registry_synchronize do
+      ensure_loaded
+      @all << edit_emoji_unsafe(emoji) { yield emoji if block_given? }
+    end
     emoji
+  end
+
+  # Public: Remove an emoji from the registry and its index entries.
+  def remove_emoji(emoji)
+    registry_synchronize do
+      remove_emoji_unsafe(emoji)
+    end
   end
 
   # Public: Yield an emoji to the block and update the indices in case its
   # aliases or unicode_aliases lists changed.
   def edit_emoji(emoji)
-    @names_index ||= Hash.new
-    @unicodes_index ||= Hash.new
-
-    @names_index.delete_if { |_, value| value == emoji }
-    @unicodes_index.delete_if { |_, value| value == emoji }
-
-    yield emoji
-
-    emoji.aliases.each do |name|
-      @names_index[name] = emoji
+    registry_synchronize do
+      edit_emoji_unsafe(emoji) { yield emoji if block_given? }
     end
-    emoji.unicode_aliases.each do |unicode|
-      @unicodes_index[unicode] = emoji
-    end
-
-    emoji
   end
 
   # Public: Find an emoji by its aliased name. Return nil if missing.
@@ -54,31 +60,80 @@ module Emoji
 
   # Public: Find an emoji by its unicode character. Return nil if missing.
   def find_by_unicode(unicode)
-    unicodes_index[unicode] || unicodes_index[unicode.sub(SKIN_TONE_RE, "")]
+    unicodes_index[unicode] || unicodes_index[unicode.gsub(SKIN_TONE_RE, "")]
   end
 
   private
-    VARIATION_SELECTOR_16 = "\u{fe0f}".freeze
-    SKIN_TONE_RE = /[\u{1F3FB}-\u{1F3FF}]/
+    def registry_synchronize
+      if Thread.current[:emoji_registry_lock]
+        yield
+      else
+        @registry_mutex.synchronize do
+          Thread.current[:emoji_registry_lock] = true
+          begin
+            yield
+          ensure
+            Thread.current[:emoji_registry_lock] = false
+          end
+        end
+      end
+    end
 
-    # Characters which must have VARIATION_SELECTOR_16 to render as color emoji:
-    TEXT_GLYPHS = [
-      "\u{1f237}", # Japanese “monthly amount” button
-      "\u{1f202}", # Japanese “service charge” button
-      "\u{1f170}", # A button (blood type)
-      "\u{1f171}", # B button (blood type)
-      "\u{1f17e}", # O button (blood type)
-      "\u{00a9}",  # copyright
-      "\u{00ae}",  # registered
-      "\u{2122}",  # trade mark
-      "\u{3030}",  # wavy dash
-    ].freeze
+    def ensure_loaded
+      return if defined? @all
+      registry_synchronize do
+        unless defined? @all
+          @all = []
+          parse_data_file
+        end
+      end
+    end
 
-    private_constant :VARIATION_SELECTOR_16, :TEXT_GLYPHS, :SKIN_TONE_RE
+    def edit_emoji_unsafe(emoji)
+      @names_index ||= Hash.new
+      @unicodes_index ||= Hash.new
+
+      @names_index.delete_if { |_, value| value == emoji }
+      @unicodes_index.delete_if { |_, value| value == emoji }
+
+      yield emoji
+
+      emoji.aliases.each do |name|
+        existing = @names_index[name]
+        if existing && existing != emoji
+          raise DuplicateAliasError,
+            "alias #{name.inspect} is already used by #{existing.name.inspect}"
+        end
+        @names_index[name] = emoji
+      end
+      emoji.unicode_aliases.each do |unicode|
+        @unicodes_index[unicode] = emoji
+      end
+
+      emoji
+    end
+
+    def remove_emoji_unsafe(emoji)
+      @names_index ||= Hash.new
+      @unicodes_index ||= Hash.new
+
+      @names_index.delete_if { |_, value| value == emoji }
+      @unicodes_index.delete_if { |_, value| value == emoji }
+
+      if defined?(@all) && @all
+        @all.delete(emoji)
+      end
+
+      emoji
+    end
 
     def parse_data_file
-      data = File.open(data_file, 'r:UTF-8') do |file|
-        JSON.parse(file.read, symbolize_names: true)
+      data = begin
+        File.open(data_file, 'r:UTF-8') do |file|
+          JSON.parse(file.read, symbolize_names: true)
+        end
+      rescue JSON::ParserError => e
+        raise DataError, "Failed to parse #{data_file}: #{e.message}"
       end
 
       if "".respond_to?(:-@)
@@ -118,25 +173,22 @@ module Emoji
           end
           raw_emoji.fetch(:tags).each { |tag| emoji.add_tag(dedup.call(tag)) }
 
-          emoji.category = dedup.call(raw_emoji[:category])
-          emoji.description = dedup.call(raw_emoji[:description])
-          emoji.unicode_version = dedup.call(raw_emoji[:unicode_version])
-          emoji.ios_version = dedup.call(raw_emoji[:ios_version])
+          emoji.category = dedup.call(raw_emoji.fetch(:category))
+          emoji.description = dedup.call(raw_emoji.fetch(:description))
+          emoji.unicode_version = dedup.call(raw_emoji.fetch(:unicode_version))
+          emoji.ios_version = dedup.call(raw_emoji.fetch(:ios_version))
           emoji.skin_tones = raw_emoji.fetch(:skin_tones, false)
         end
       end
     end
 
     def names_index
-      all unless defined? @all
+      ensure_loaded
       @names_index
     end
 
     def unicodes_index
-      all unless defined? @all
+      ensure_loaded
       @unicodes_index
     end
 end
-
-# Preload emoji into memory
-Emoji.all
