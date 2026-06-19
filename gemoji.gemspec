@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.summary = "Unicode emoji library"
   s.description = "Character information and metadata for Unicode emoji."
 
-  s.required_ruby_version = '> 1.9'
+  s.required_ruby_version = '>= 2.7'
 
   s.authors  = ["GitHub"]
   s.email    = "support@github.com"

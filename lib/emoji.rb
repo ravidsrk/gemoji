@@ -17,6 +17,9 @@ module Emoji
     File.expand_path('../../db/emoji.json', __FILE__)
   end
 
+  # The emoji catalog and alias/unicode indices are loaded on first use (see
+  # ensure_loaded) and kept in memory for the process lifetime. Callers that
+  # only need a few lookups still pay the full-catalog memory cost once loaded.
   def all
     ensure_loaded
     @all.dup.freeze
