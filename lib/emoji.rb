@@ -55,7 +55,7 @@ module Emoji
 
   # Public: Find an emoji by its unicode character. Return nil if missing.
   def find_by_unicode(unicode)
-    unicodes_index[unicode] || unicodes_index[unicode.sub(SKIN_TONE_RE, "")]
+    unicodes_index[unicode] || unicodes_index[unicode.gsub(SKIN_TONE_RE, "")]
   end
 
   private
