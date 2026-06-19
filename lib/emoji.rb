@@ -10,6 +10,8 @@ module Emoji
 
   class DuplicateAliasError < StandardError; end
 
+  @registry_mutex = Mutex.new
+
   def data_file
     File.expand_path('../../db/emoji.json', __FILE__)
   end
@@ -25,49 +27,26 @@ module Emoji
   # The character is added to the `Emoji.all` set.
   def create(name)
     emoji = Emoji::Character.new(name)
-    self.all << edit_emoji(emoji) { yield emoji if block_given? }
+    registry_synchronize do
+      ensure_loaded
+      @all << edit_emoji_unsafe(emoji) { yield emoji if block_given? }
+    end
     emoji
   end
 
   # Public: Remove an emoji from the registry and its index entries.
   def remove_emoji(emoji)
-    @names_index ||= Hash.new
-    @unicodes_index ||= Hash.new
-
-    @names_index.delete_if { |_, value| value == emoji }
-    @unicodes_index.delete_if { |_, value| value == emoji }
-
-    if defined?(@all) && @all
-      @all.delete(emoji)
+    registry_synchronize do
+      remove_emoji_unsafe(emoji)
     end
-
-    emoji
   end
 
   # Public: Yield an emoji to the block and update the indices in case its
   # aliases or unicode_aliases lists changed.
   def edit_emoji(emoji)
-    @names_index ||= Hash.new
-    @unicodes_index ||= Hash.new
-
-    @names_index.delete_if { |_, value| value == emoji }
-    @unicodes_index.delete_if { |_, value| value == emoji }
-
-    yield emoji
-
-    emoji.aliases.each do |name|
-      existing = @names_index[name]
-      if existing && existing != emoji
-        raise DuplicateAliasError,
-          "alias #{name.inspect} is already used by #{existing.name.inspect}"
-      end
-      @names_index[name] = emoji
+    registry_synchronize do
+      edit_emoji_unsafe(emoji) { yield emoji if block_given? }
     end
-    emoji.unicode_aliases.each do |unicode|
-      @unicodes_index[unicode] = emoji
-    end
-
-    emoji
   end
 
   # Public: Find an emoji by its aliased name. Return nil if missing.
@@ -81,6 +60,69 @@ module Emoji
   end
 
   private
+    def registry_synchronize
+      if Thread.current[:emoji_registry_lock]
+        yield
+      else
+        @registry_mutex.synchronize do
+          Thread.current[:emoji_registry_lock] = true
+          begin
+            yield
+          ensure
+            Thread.current[:emoji_registry_lock] = false
+          end
+        end
+      end
+    end
+
+    def ensure_loaded
+      return if defined? @all
+      registry_synchronize do
+        unless defined? @all
+          @all = []
+          parse_data_file
+        end
+      end
+    end
+
+    def edit_emoji_unsafe(emoji)
+      @names_index ||= Hash.new
+      @unicodes_index ||= Hash.new
+
+      @names_index.delete_if { |_, value| value == emoji }
+      @unicodes_index.delete_if { |_, value| value == emoji }
+
+      yield emoji
+
+      emoji.aliases.each do |name|
+        existing = @names_index[name]
+        if existing && existing != emoji
+          raise DuplicateAliasError,
+            "alias #{name.inspect} is already used by #{existing.name.inspect}"
+        end
+        @names_index[name] = emoji
+      end
+      emoji.unicode_aliases.each do |unicode|
+        @unicodes_index[unicode] = emoji
+      end
+
+      emoji
+    end
+
+    def remove_emoji_unsafe(emoji)
+      @names_index ||= Hash.new
+      @unicodes_index ||= Hash.new
+
+      @names_index.delete_if { |_, value| value == emoji }
+      @unicodes_index.delete_if { |_, value| value == emoji }
+
+      if defined?(@all) && @all
+        @all.delete(emoji)
+      end
+
+      emoji
+    end
+
     def parse_data_file
       data = File.open(data_file, 'r:UTF-8') do |file|
         JSON.parse(file.read, symbolize_names: true)
@@ -133,12 +175,12 @@ module Emoji
     end
 
     def names_index
-      all unless defined? @all
+      ensure_loaded
       @names_index
     end
 
     def unicodes_index
-      all unless defined? @all
+      ensure_loaded
       @unicodes_index
     end
 end
