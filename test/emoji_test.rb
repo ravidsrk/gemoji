@@ -242,6 +242,9 @@ class EmojiTest < TestCase
 
   test "edit" do
     emoji = Emoji.find_by_alias("weary")
+    original_aliases = emoji.instance_variable_get(:@aliases).dup
+    original_unicode_aliases = emoji.instance_variable_get(:@unicode_aliases).dup
+    original_tags = emoji.instance_variable_get(:@tags).dup
 
     emoji = Emoji.edit_emoji(emoji) do |char|
       char.add_alias "whining"
@@ -258,10 +261,11 @@ class EmojiTest < TestCase
       assert_equal %w[weary whining], emoji.aliases
       assert_includes emoji.tags, "complaining"
     ensure
-      emoji.aliases.pop
-      emoji.unicode_aliases.pop
-      emoji.tags.pop
-      Emoji.edit_emoji(emoji) {}
+      Emoji.edit_emoji(emoji) do |char|
+        char.instance_variable_set(:@aliases, original_aliases)
+        char.instance_variable_set(:@unicode_aliases, original_unicode_aliases)
+        char.instance_variable_set(:@tags, original_tags)
+      end
     end
   end
 
@@ -272,7 +276,9 @@ class EmojiTest < TestCase
     Emoji.edit_emoji(emoji) { |char| char.add_alias temp_alias }
     assert_equal emoji, Emoji.find_by_alias(temp_alias)
 
-    Emoji.edit_emoji(emoji) { |char| char.aliases.delete(temp_alias) }
+    Emoji.edit_emoji(emoji) do |char|
+      char.instance_variable_get(:@aliases).delete(temp_alias)
+    end
     assert_nil Emoji.find_by_alias(temp_alias)
     assert_equal emoji, Emoji.find_by_alias("weary")
   end
