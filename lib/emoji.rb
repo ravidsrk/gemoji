@@ -27,6 +27,21 @@ module Emoji
     emoji
   end
 
+  # Public: Remove an emoji from the registry and its index entries.
+  def remove_emoji(emoji)
+    @names_index ||= Hash.new
+    @unicodes_index ||= Hash.new
+
+    @names_index.delete_if { |_, value| value == emoji }
+    @unicodes_index.delete_if { |_, value| value == emoji }
+
+    if defined?(@all) && @all
+      @all.delete(emoji)
+    end
+
+    emoji
+  end
+
   # Public: Yield an emoji to the block and update the indices in case its
   # aliases or unicode_aliases lists changed.
   def edit_emoji(emoji)
