@@ -8,6 +8,8 @@ require 'json'
 module Emoji
   extend self
 
+  class DuplicateAliasError < StandardError; end
+
   def data_file
     File.expand_path('../../db/emoji.json', __FILE__)
   end
@@ -54,6 +56,11 @@ module Emoji
     yield emoji
 
     emoji.aliases.each do |name|
+      existing = @names_index[name]
+      if existing && existing != emoji
+        raise DuplicateAliasError,
+          "alias #{name.inspect} is already used by #{existing.name.inspect}"
+      end
       @names_index[name] = emoji
     end
     emoji.unicode_aliases.each do |unicode|
