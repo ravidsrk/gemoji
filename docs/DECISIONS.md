@@ -38,3 +38,23 @@ ASSUMPTIONS:
 2. Stack: minitest, stdlib JSON; separate test files per gap for parallel PR safety
 3. OUT OF scope: coverage % vanity targets, logic refactors, BASE→main promotion
 → Proceeding unless a hard-dependency gate blocks.
+
+## Mission: doc-sync (2026-06-20)
+
+- MAINTAINER: Ravindra Kumar <ravidsrk@gmail.com>
+- BASE: `fleet/gemoji-ship-with-proof-base`
+- Adapter: `autonomous-fleet-adapter-grok`
+- BRANCH_PREFIX: `fleet/`
+- Prior readiness existed without progress ledger; re-running audit found 8 drift items
+- Worker mode: fully autonomous / max effort
+- Merge policy: merge commit into BASE, never squash
+
+ASSUMPTIONS:
+1. Scope: README, CONTRIBUTING, fleet readiness/progress docs — no `lib/` changes
+2. Stack: Ruby gem; code is ground truth for API behaviour
+3. OUT OF scope: fixing code bugs revealed by docs, BASE→main promotion, emoji data regeneration
+→ Proceeding unless a hard-dependency gate blocks.
+
+**Code bug finding (deferred to bug-batch):** `registry_concurrency_test.rb` fails on Ruby 4.0.5
+with `NoMethodError` — `names_index` nil under concurrent `find_by_alias` during lazy load
+(`lib/emoji.rb:60-61`). Recorded as CONC-DOC-001 in readiness; not fixed here.
