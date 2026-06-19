@@ -16,12 +16,19 @@ gem 'gemoji'
 Development
 -----------
 
-Run the test suite (stdlib Minitest; no Rake required on modern Ruby):
+Requires Ruby **2.7+** (see `gemoji.gemspec`). Run the test suite with stdlib Minitest
+(no Rake required on modern Ruby):
 
 ```bash
 ruby -Ilib:test test/emoji_test.rb
 ruby -Ilib:test test/documentation_test.rb
+ruby -Ilib:test test/duplicate_alias_test.rb
+ruby -Ilib:test test/data_error_test.rb
+ruby -Ilib:test test/registry_concurrency_test.rb
+ruby -Ilib:test test/image_filename_test.rb
 ```
+
+Or use `script/test` after `script/bootstrap` (Bundler + Rake).
 
 Example Rails Helper
 --------------------
@@ -51,6 +58,27 @@ module EmojiHelper
   end
 end
 ```
+
+Registry API
+------------
+
+The emoji catalog loads **lazily** on first lookup (`Emoji.all`, `find_by_alias`, etc.).
+For apps that want to pay the load cost at boot, call:
+
+```ruby
+Emoji.preload!  # loads db/emoji.json into memory; returns self
+```
+
+Remove a custom emoji (or tear down test fixtures) with:
+
+```ruby
+emoji = Emoji.create("tmp") { |c| c.add_alias "tmp" }
+Emoji.remove_emoji(emoji)
+Emoji.find_by_alias("tmp")  #=> nil
+```
+
+**Errors:** duplicate alias assignment raises `Emoji::DuplicateAliasError`. A malformed
+`db/emoji.json` raises `Emoji::DataError` with the file path in the message.
 
 Unicode mapping
 ---------------
