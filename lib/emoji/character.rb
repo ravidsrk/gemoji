@@ -19,7 +19,7 @@ module Emoji
     # A list of names uniquely referring to this emoji.
     attr_reader :aliases
 
-    # The category for this emoji as per Apple's character palette
+    # The category for this emoji from Unicode emoji-test group data
     attr_accessor :category
 
     # The Unicode description text

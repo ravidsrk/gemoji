@@ -26,8 +26,8 @@ module Emoji
     emoji
   end
 
-  # Public: Yield an emoji to the block and update the indices in case its
-  # aliases or unicode_aliases lists changed.
+  # Public: Yield an emoji to the block and add its aliases and
+  # unicode_aliases to the indices.
   def edit_emoji(emoji)
     @names_index ||= Hash.new
     @unicodes_index ||= Hash.new
