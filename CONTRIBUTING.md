@@ -8,7 +8,7 @@ script/bootstrap
 
 Sets up the development environment. The prerequisites are:
 
-* Ruby 1.9+
+* Ruby 2.7, 3.0, or 3.1
 * Bundler
 
 ```
@@ -27,5 +27,6 @@ Opens `irb` console with gemoji library preloded for experimentation.
 script/release
 ```
 
-For maintainers only: after the gemspec has been edited, this commits the
-change, tags a release, and pushes it to both GitHub and RubyGems.org.
+For maintainers only: after the gemspec has been edited, this runs the tests,
+builds the gem, commits `gemoji.gemspec` and `Gemfile.lock`, tags a release,
+pushes `HEAD` and the tag to `origin`, and runs `gem push`.
