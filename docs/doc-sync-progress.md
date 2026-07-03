@@ -20,8 +20,15 @@ INTEGRATOR: coordinator (claude) via gh — push, PR, conflict-aware merge
 | Task | Branch | PR | REVIEWED_SHA | WRITTEN | PR_OPEN | REVIEWED | MERGED |
 |------|--------|----|--------------|---------|---------|----------|--------|
 | T-AUDIT | — | — | — | t | — | — | — |
-| T-FIX-contributing (D-001..D-003) | fleet/doc-sync-contributing-3e8173 | #8 | b0bd3865d15cfe1c68a621f305dd80e85bdaebf6 | t | t | t (PASS) | t (branch deleted) |
-| T-FIX-comments (D-004..D-007) | fleet/doc-sync-comments-3e8173 | #9 | f241925fe0bfe9db7d03b37bc6089fa70b81b7db | t | t | t (PASS) | t (branch deleted) |
-| T-FINAL | fleet/doc-sync-final-3e8173 | #10 | (pinned at review) | t | t | t | t |
+| T-FIX-contributing (D-001..D-003) | fleet/doc-sync-contributing-3e8173 | #8 | b0bd3865d15cfe1c68a621f305dd80e85bdaebf6 | t | t | t (PASS) | t (merged 22f79dc; remote branch deleted at merge) |
+| T-FIX-comments (D-004..D-007) | fleet/doc-sync-comments-3e8173 | #9 | f241925fe0bfe9db7d03b37bc6089fa70b81b7db | t | t | t (PASS) | t (merged 614946b; remote branch deleted at merge) |
+| T-FINAL | fleet/doc-sync-final-3e8173 | #10 | see .fleet run archive sha-pin-pr10.json | t | t | pending at doc-write time | pending at doc-write time |
+
+T-FINAL row note: this ledger ships INSIDE PR #10, so its own REVIEWED/MERGED
+flags cannot be true at write time. The integrator merges #10 only after a
+fresh reviewer PASS; the reviewed SHA and verdict land in the run archive
+(`sha-pin-pr10.json`), and the merge commit is verifiable in GitHub history
+after the fact. Remote branch deletions are performed by `gh pr merge
+--delete-branch`; verify via the fork's branch list, not local tracking refs.
 
 All DRIFT INDEX items CLOSED (see docs/doc-sync-audit.md). Worktrees: none created (single clone, branch-per-task); WT_CLEAN=t by construction.
