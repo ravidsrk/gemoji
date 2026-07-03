@@ -8,7 +8,7 @@ Rake::TestTask.new do |t|
 end
 
 namespace :db do
-  desc %(Generate Emoji data files needed for development)
+  desc %(Ensure the Unicode emoji-test data file is available)
   task :generate => [
     'vendor/unicode-emoji-test.txt',
   ]

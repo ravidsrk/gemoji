@@ -2,7 +2,7 @@
 # Usage: script/release
 #
 # 1. Checks if tests pass,
-# 2. commits gemspec,
+# 2. commits gemspec and lockfile,
 # 3. tags the release with the version in the gemspec,
 # 4. pushes "gemoji" gem to RubyGems.org.
 
